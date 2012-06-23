@@ -108,6 +108,31 @@ exports['test Object.defineProperty'] = function(assert) {
   assert.equal(object[secret2], 5, 'non-enumerable private is defined')
 }
 
+exports['test Object.create'] = function(assert) {
+  var secret1 = Name()
+  var secret2 = Name()
+
+  var object = { foo: 1, bar: 2 }
+  var descriptor = { baz: { value: 3 }, beep: { value: 4, enumerable: true } }
+  descriptor[secret1] = { enumerable: true, value: 5 }
+  descriptor[secret2] = { enumerable: false, value: 6 }
+
+  var result = Object.create(object, descriptor)
+
+  assert.deepEqual(Object.keys(result), [ 'beep' ],
+                   'object keys does not includes private name')
+  assert.deepEqual(Object.getOwnPropertyNames(result).sort(),
+                  [ 'baz', 'beep' ].sort(),
+                   'object keys does not includes private name')
+
+  assert.deepEqual(iteratedNames(result).sort(),
+                   [ 'foo', 'bar', 'beep' ].sort(),
+                   'object iterator does not includes private names')
+
+  assert.equal(result[secret1], 5, 'enumerable private is defined')
+  assert.equal(result[secret2], 6, 'non-enumerable private is defined')
+}
+
 if (require.main == module) require('test').run(exports)
 
 });

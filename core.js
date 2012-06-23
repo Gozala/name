@@ -34,19 +34,26 @@ module.exports = typeof(Name) !== 'undefined' ? Name : new function() {
   var keys = Object.keys
   var defineProperties = Object.defineProperties
   var defineProperty = Object.defineProperty
+  var create = Object.create
 
   function isPublic(name) { return name[0] !== prefix }
   function getOwnPublicNames(object) { return names(object).filter(isPublic) }
   function getOwnPublicKeys(object) { return keys(object).filter(isPublic) }
+  function patch(descriptor) {
+    names(descriptor).forEach(function(name) {
+      if (!isPublic(name)) descriptor[name].enumerable = false
+    })
+    return descriptor
+  }
   function defineOwnProperty(object, name, descriptor) {
     descriptor.enumerable = false
     return defineProperty(object, name, descriptor)
   }
   function defineOwnProperties(object, descriptor) {
-    names(descriptor).forEach(function(name) {
-      if (!isPublic(name)) descriptor[name].enumerable = false
-    })
-    return defineProperties(object, descriptor)
+    return defineProperties(object, patch(descriptor))
+  }
+  function createObject(prototype, descriptor) {
+    return create(prototype, descriptor && patch(descriptor))
   }
 
   // Note we use bind only in order to hide source of the function when
@@ -62,6 +69,9 @@ module.exports = typeof(Name) !== 'undefined' ? Name : new function() {
   })
   Object.defineProperty(Object, 'defineProperty', {
     value: defineOwnProperty.bind(Object)
+  })
+  Object.defineProperty(Object, 'create', {
+    value: createObject.bind(Object)
   })
 
 
