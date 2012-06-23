@@ -133,6 +133,35 @@ exports['test Object.create'] = function(assert) {
   assert.equal(result[secret2], 6, 'non-enumerable private is defined')
 }
 
+exports['test example'] = function(assert) {
+  var secret = Name()
+  function MyClass(privateData) {
+    // do not do `this[secret] = privateData` do following instead
+    Object.defineProperty(this, secret, {
+      value: privateData,
+      enumerable: true
+    })
+    this.name = 'my'
+  }
+  MyClass.prototype = {
+    doStuff: function() {
+      /*...*/ this[secret] /*...*/
+    }
+  }
+
+  var my = new MyClass({})
+
+  assert.deepEqual(Object.keys(my), [ 'name' ],
+                   'Object.keys ignores privates')
+  assert.deepEqual(Object.getOwnPropertyNames(my), [ 'name' ],
+                  'Object.getOwnPropertyNames ignores privates')
+
+  var names = []
+  for (var name in my) names.push(name)
+
+  assert.deepEqual(names, [ 'name', 'doStuff' ], 'for ignores private names')
+}
+
 if (require.main == module) require('test').run(exports)
 
 });
