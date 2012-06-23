@@ -36,7 +36,7 @@ module.exports = typeof(Name) !== 'undefined' ? Name : new function() {
   var defineProperty = Object.defineProperty
   var create = Object.create
 
-  function isPublic(name) { return name[0] !== prefix }
+  function isPublic(name) { return String(name)[0] !== prefix }
   function getOwnPublicNames(object) { return names(object).filter(isPublic) }
   function getOwnPublicKeys(object) { return keys(object).filter(isPublic) }
   function patch(descriptor) {
@@ -46,7 +46,7 @@ module.exports = typeof(Name) !== 'undefined' ? Name : new function() {
     return descriptor
   }
   function defineOwnProperty(object, name, descriptor) {
-    descriptor.enumerable = false
+    if (!isPublic(name)) descriptor.enumerable = false
     return defineProperty(object, name, descriptor)
   }
   function defineOwnProperties(object, descriptor) {
@@ -75,9 +75,21 @@ module.exports = typeof(Name) !== 'undefined' ? Name : new function() {
   })
 
 
-  return function Name(hint) {
-    return prefix + (hint || '') + '@' + Math.random().toString(32).substr(2)
+  function Name(hint) {
+    return Object.create(Name.prototype, {
+      name: {
+        value: prefix +
+          (hint || '') +
+          '@' +
+          Math.random().toString(32).substr(2)
+      }
+    })
   }
+  Name.prototype = Object.create(null, {
+    toString: { value: function() { return this.name } },
+    valueOf: { value: function() { return this.name } }
+  })
+  return Name
 }
 
 });
