@@ -1,7 +1,7 @@
 {
   "name": "name",
   "id": "name",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "ES.next private name objects shim",
   "keywords": [ "private", "name", "ES6", "harmony", "shim", "polyfill" ],
   "author": "Irakli Gozalishvili <rfobic@gmail.com> (http://jeditoolkit.com)",
